@@ -26,18 +26,29 @@ class DistanceFinder:
 
 		# convert the image to grayscale
  		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
- 		
+
  		# blur the image
  		gray = cv2.GaussianBlur(gray, (5, 5), 0)
  		
+ 		# log to see image transformation
+		cv2.imshow("gray", gray)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+
  		# find edges in the image
  		edged = cv2.Canny(gray, 35, 125)
 		
+		# log to see image transformation
+		cv2.imshow("edged", edged)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+
 		# find contours in the edged image
 		# flag RETR_EXTERNAL: extract only the outer contours
 		# prerequisite: marker will be one of the largest objects in an image
  		(contours, _) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
- 		
+ 		print "[INFO] Contours found {}".format(contours)
+
  		# sort contours by their size (from largest to smallest)
  		contours = sorted(contours, key=cv2.contourArea, reverse=True)
  		
@@ -49,6 +60,7 @@ class DistanceFinder:
 	 		# approximate the contour
 	 		perimeter = cv2.arcLength(c, True)
 	 		approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+	 		print approx
 	 		# ensure that the contour is a rectangle
 			if len(approx) == 4:
 				# compute the bounding box and aspect ratio of the approximated contour
@@ -65,9 +77,9 @@ class DistanceFinder:
 	# Draw a bounding box around the marker and display the distance 
 	# to the marker on the image
 	@staticmethod
-	def draw(image, boundingBox, dist, color=(0, 255, 0), thickness=2):
+	def draw(image, boundingBox, distance, color=(200,255,155), thickness=2):
 		(x, y, width, height) = boundingBox
-		cv2.rectangle(image, (x, y), (x + widtht, y + height), color, 2)
-		cv2.putText(image, "%.2fft" % (dist / 12), (image.shape), 
-			cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 3)
+		cv2.rectangle(image, (x, y), (x + width, y + height), color, thickness)
+		cv2.putText(image, "%.2fcm" % distance, (0,130),
+			cv2.FONT_HERSHEY_SIMPLEX, 2.0, color)
 		return image

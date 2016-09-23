@@ -12,7 +12,7 @@ ap.add_argument("-r", "--reference", required=True,
 	help="path to the reference image")
 ap.add_argument("-w", "--ref-width-inches", required=True, type=float,
 	help="reference object width in inches")
-ap.add_argument("-d", "--ref-distance-inches", required=True,
+ap.add_argument("-d", "--ref-distance-inches", required=True, type=float,
 	help="distance to reference object in inches")
 ap.add_argument("-i", "--images", required=True, 
 	help="path to the directory containing images to test")
@@ -31,10 +31,10 @@ df = DistanceFinder(args["ref_width_inches"], args["ref_distance_inches"])
 refMarker = DistanceFinder.findSquareMarker(refImage)
 
 # calibrate the distance
-df.calibrate(30)
+df.calibrate(refMarker[1])
 
 # visualize the results on the reference image and display it
-refImage = df.draw(refImage, refMarker, distance(refMarker[2]))
+refImage = df.draw(refImage, refMarker, df.distance(refMarker[2]))
 cv2.imshow("Reference", refImage)
 
 # loop over the image paths
@@ -43,14 +43,14 @@ for imagePath in paths.list_images(args["images"]):
 	filename = imagePath[imagePath.rfind("/") + 1:]
 	image = cv2.imread(imagePath)
 	image = imutils.resize(image, height=700)
-	print "[INFO] processing {}".format(filename)
+	print "[INFO] Processing {}".format(filename)
 
 	# find the marker in the image
 	marker = DistanceFinder.findSquareMarker(image)
 
 	# if the marker is None, then the square marker could not be found in the image
 	if marker is None:
-		 print "[INFO] could not find marker for {}".format(filename)
+		 print "[INFO] Could not find marker for {}".format(filename)
 		 continue
 
 	# determine the distance to the marker
