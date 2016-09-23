@@ -28,7 +28,7 @@ class DistanceFinder:
 
 		# find contours in the edged image, sort them according to their area (from largest to
 		# smallest), and initialize the marker dimensions
-		(cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		(_, cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 		cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
 		markerDim = None
 
