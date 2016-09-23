@@ -1,6 +1,6 @@
 # Driver to execute the program
-from from pyimagesearch.markers import DistanceFinder
-from from imutils import paths
+from markers.distance_finder import DistanceFinder
+from imutils import paths
 import argparse
 import imutils
 import cv2
@@ -8,13 +8,14 @@ import cv2
 # construct the argument parser and parse the command line arguments
 # reference is the target file path
 ap = argparse.ArgumentParser()
-ap.add_argument("-r", "--reference", required=True, help="path to the reference image"
-ap.add_argument("-w", "--ref-width-inches", required=True, type
-help="reference object width in inches")
-ap.add_argument("-d", "--ref-distance-inches", required=True
-help="distance to reference object in inches")
-ap.add_argument("-i", "--images", required=True,
-help="path to the directory containing images to test")
+ap.add_argument("-r", "--reference", required=True, 
+	help="path to the reference image")
+ap.add_argument("-w", "--ref-width-inches", required=True, type=float,
+	help="reference object width in inches")
+ap.add_argument("-d", "--ref-distance-inches", required=True,
+	help="distance to reference object in inches")
+ap.add_argument("-i", "--images", required=True, 
+	help="path to the directory containing images to test")
 args = vars(ap.parse_args())
 
 # load the reference image
@@ -30,13 +31,10 @@ df = DistanceFinder(args["ref_width_inches"], args["ref_distance_inches"])
 refMarker = DistanceFinder.findSquareMarker(refImage)
 
 # calibrate the distance
-df.calibrate(refMarker[2])
-
-# calculate distance
-distance = df.distance(refMarker[1])
+df.calibrate(30)
 
 # visualize the results on the reference image and display it
-refImage = df.draw(refImage, refMarker, distance)
+refImage = df.draw(refImage, refMarker, distance(refMarker[2]))
 cv2.imshow("Reference", refImage)
 
 # loop over the image paths

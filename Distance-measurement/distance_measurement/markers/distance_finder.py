@@ -65,7 +65,7 @@ class DistanceFinder:
 	# Draw a bounding box around the marker and display the distance 
 	# to the marker on the image
 	@staticmethod
-	def draw(image, boundingBox, dist, color=(0, 255, 0), thickness=2)
+	def draw(image, boundingBox, dist, color=(0, 255, 0), thickness=2):
 		(x, y, width, height) = boundingBox
 		cv2.rectangle(image, (x, y), (x + widtht, y + height), color, 2)
 		cv2.putText(image, "%.2fft" % (dist / 12), (image.shape), 
