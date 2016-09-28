@@ -4,7 +4,7 @@ import cv2
 cap =cv2.VideoCapture(0)
 
 if cap.isOpened() == False:
-    printf('Error: Unable to open the camera')
+    print('Error: Unable to open the camera')
 else:
     print('Start grabbing, press any key on Live window to terminate')
 
