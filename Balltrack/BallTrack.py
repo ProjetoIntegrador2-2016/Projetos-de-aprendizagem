@@ -1,52 +1,34 @@
 # imports
-# deque is a list-like structure 
-from collections import deque
 import numpy as np
-import argparse
 import imutils
 import cv2
-
-# Parse the arguments
-
-ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video", help="path to the (optional) video file")
-
-# Bufer mantains the list of previous positions 
-ap.add_argument("-b", "--buffer", type=int, default=64, help="max buffer size")
-args = vars(ap.parse_args())
 
 # define the lower and upper bounds of the color (green)
 # ball in HSV color space, then initialize the list of tracked points
 
-greenLower = np.array([3,51,40],np.uint8)
-#(29, 86, 6)
-greenUpper = np.array([13,255,255],np.uint8)
-#(64, 255, 255)
+# simple green
+# greenLower = np.array([27, 68, 38], np.uint8)
+# greenUpper = np.array([88, 255, 255], np.uint8)
 
-pts = deque(maxlen=args["buffer"])
+# optimized for the target ball
+greenLower = np.array([48, 48, 49], np.uint8)
+greenUpper = np.array([73, 255, 220], np.uint8)
+
 
 # if a video path was not supplied, grab the webcam
 # otherwise, grab the reference video
-if not args.get("video", False):
-    camera = cv2.VideoCapture(0)
-else:
-    camera = cv2.VideoCapture(args["Video"])
+camera = cv2.VideoCapture(0)
 
-while True:
+while camera.isOpened():
+
     # grab current frame
     (grabbed, frame) = camera.read()
 
-    # EOF for video
-    if args.get("video") and not grabbed:
-        break;
-
     frame = imutils.resize(frame, width=600)
-    # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # creates a mask for the color, the do dilatations and erosions
     # to remove small blobs in the mask
-
     mask = cv2.inRange(hsv, greenLower, greenUpper)
     mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
@@ -54,12 +36,17 @@ while True:
     # find contours in the mask and initialize the current (x,y) center
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
     center = None
+    radius = 1
+    focalLenght = (114*16) / 5.5
+    distance = (5.5*focalLenght)/radius
+    position = ""
 
     # only proceed if at least one contour was found
     if len(cnts) > 0:
         #find the largest contour in the mask, then use it to compute the minimunm enclosing circle and centroid
         c = max(cnts, key = cv2.contourArea)
         ((x,y),radius) = cv2.minEnclosingCircle(c)
+
         M = cv2.moments(c)
         if M["m00"] > 0:
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
@@ -67,21 +54,30 @@ while True:
         #only proceed if the raidus meets a minimun size
         if radius > 10:
             #draws the circle and centroid on the frame then update the list of tracked points
-            cv2.circle(frame,(int(x), int(y)), int(radius), (0,255,255), 2)
-            cv2.circle(frame, center, 5, (0,0,255), -1)
+            cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+            distance = (5.5 * focalLenght) / radius
 
-    # update the queue
-    pts.appendleft(center)
+            if center[0] < (frame.shape[1] / 3):
+                position = "Esquerda"
+            elif center[0] < (frame.shape[1] / 3) * 2:
+                position = "Centro"
+            else:
+                position = "Direita"
 
-    #loop over the set of tracked points
-    for i in xrange(1, len(pts)):
-        #if either of the tracked points are None, ignore them
-        if pts[i-1] is None or pts[i] is None:
-            continue
+            if center[1] < (frame.shape[0]/3):
+                position += "-Cima"
+            elif center[1] < (frame.shape[0] / 3) * 2:
+                position += "-Centro"
+            else:
+                position += "-Baixo"
 
-        #otherwise compute the thickness of the line and draw
-        thickness = int(np.sqrt(args["buffer"] / float(i+1))*2.5)
-        cv2.line(frame, pts[i-1], pts[i], (0,0,255), thickness)
+    else:
+        print('Not Found')
+
+    cv2.putText(frame, "%.2f cm" % distance, (frame.shape[1] - 200, frame.shape[0] - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+    cv2.putText(frame, position, (50, frame.shape[0] - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
 
     #show the frame to our screen
     cv2.imshow("Frame", frame)
@@ -89,7 +85,7 @@ while True:
 
     #if the 'q' key is pressed, stop the loop
     if key == ord("q"):
-        break;
+        break
 
 #cleanup the camera and close any windows
 camera.release()
