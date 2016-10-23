@@ -1,29 +1,21 @@
-     import RPi.GPIO as GPIO
-import time
 import serial
+import time
+ser = serial.Serial('/dev/serial0', 9600, timeout=1)
+#ser.open() # serial is already open
 
-# Inicia serial e a velocidade de transmissao
-ser = serial.Serial("/dev/serial0", 115200)
+# Variable dir will be set according to the 
+# direction that the prototype needs to go
+# based on the target action
 
-GPIO.setmode(GPIO.BOARD)
 
-#Botao como entrada
-GPIO.setup(18, GPIO.IN)
+try:
+ while 1:
+  dir = input("Insert the motors orientation: ")  
 
-print("Press the button")
+  ser.write(dir)
+  time.sleep(1)
+  response = ser.readline()	
+  print response
 
-while True:
-    if GPIO.input(18) == True:
-        ser.write("L")
-        print("Enviado L")
-
-        # Aguarda resposta
-        answer = ser.readLine()
-
-        # Mostra na tela a resposta enviada pelo arduino
-
-        print answer
-
-        # Aguarda 5 sec
-        time.sleep(0.5)
-
+except KeyboardInterrupt:
+ ser.close()

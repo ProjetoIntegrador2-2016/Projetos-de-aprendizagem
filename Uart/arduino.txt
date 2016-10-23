@@ -1,0 +1,53 @@
+char incoming = 'p';
+int pwm_a = 3;
+int pwm_b = 11;
+int dir_a = 12;
+int dir_b = 13;
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(pwm_a, OUTPUT);
+  pinMode(pwm_b, OUTPUT);
+  pinMode(dir_a, OUTPUT);
+  pinMode(dir_b, OUTPUT);
+
+
+  digitalWrite(dir_a, HIGH);
+  digitalWrite(dir_b, HIGH);
+  analogWrite(pwm_a, 0);
+  analogWrite(pwm_b, 0);
+}
+
+void loop() {
+  if (Serial.available()){
+    incoming = Serial.read();
+
+    switch(incoming){
+      case 'l':
+        analogWrite(pwm_a, 255);
+        analogWrite(pwm_b, 0);
+        break;
+      case 'r':
+        analogWrite(pwm_a, 0);
+        analogWrite(pwm_b, 255);
+        break;
+      case 'f':
+        digitalWrite(dir_a, HIGH);
+        digitalWrite(dir_b, HIGH);
+        analogWrite(pwm_a, 255);
+        analogWrite(pwm_b, 255);
+        break;
+      case 'b':
+        digitalWrite(dir_a, LOW);
+        digitalWrite(dir_b, LOW);
+        analogWrite(pwm_a, 255);
+        analogWrite(pwm_b, 255);
+        break;
+      default:
+        break;
+    }
+    Serial.write(incoming);
+    delay(100);
+  }
+}
