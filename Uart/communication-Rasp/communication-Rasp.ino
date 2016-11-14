@@ -1,7 +1,7 @@
 // Clockwise and counter-clockwise definitions.
 // Depending on how you wired your motors, you may need to swap.
-#define CW  0
-#define CCW 1
+#define CW  1
+#define CCW 0
 
 // Motor definitions to make life easier:
 #define MOTOR_A 0
@@ -12,17 +12,20 @@
 #define BACKWARD 'b'
 #define LEFT 'l'
 #define RIGHT 'r'
+#define TURN_LEFT 'e'
+#define TURN_RIGHT 'd'
 
 const byte PWMA = 3;  // PWM control (speed) for motor A
 const byte PWMB = 11; // PWM control (speed) for motor B
 const byte DIRA = 12; // Direction control for motor A
 const byte DIRB = 13; // Direction control for motor B
 
-char incoming = 'q';
+char incoming = 'n';
+int last_cw = CW;
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(19200);
   setupArdumoto();
 }
 
@@ -33,31 +36,48 @@ void loop()
     
     incoming = Serial.read();
     switch(incoming){
-      case 'f':
-        driveArdumoto(MOTOR_A, CCW, 100);
-        driveArdumoto(MOTOR_B, CCW, 100);
-      break;
-      case 'b':
+      case FOWARD:
         driveArdumoto(MOTOR_A, CW, 100);
         driveArdumoto(MOTOR_B, CW, 100);
+        last_cw = CW;  
       break;
-      case 'l':
-        analogWrite(PWMA, 50);
-        analogWrite(PWMB, 255);
+      case BACKWARD:
+        driveArdumoto(MOTOR_A, CCW, 100);
+        driveArdumoto(MOTOR_B, CCW, 100);
+        last_cw = CCW;
       break;
-      case 'r':
-        analogWrite(PWMA, 255);
-        analogWrite(PWMB, 50);
+      case LEFT:
+        if (last_cw == CW) {
+            analogWrite(PWMA, 50);
+            analogWrite(PWMB, 200);
+          } else {
+            analogWrite(PWMA, 200);
+            analogWrite(PWMB, 50);
+          }
       break;
+      case RIGHT:
+        if (last_cw == CW) {
+            analogWrite(PWMA, 50);
+            analogWrite(PWMB, 200);
+          } else {
+            analogWrite(PWMA, 200);
+            analogWrite(PWMB, 50);
+          }
+      break;
+      case TURN_RIGHT:
+         stopArdumoto(MOTOR_A);
+         stopArdumoto(MOTOR_B);
+         driveArdumoto(MOTOR_A, CCW, 200);
+      break;
+      case TURN_LEFT:
+         stopArdumoto(MOTOR_A);
+         stopArdumoto(MOTOR_B);
+         driveArdumoto(MOTOR_B, CCW, 200);
       default:
         stopArdumoto(MOTOR_A);
         stopArdumoto(MOTOR_B);
     }
-    delay(1000);
-    if(incoming != 'q'){
-      Serial.write(incoming);
-    }
-    delay(1000);
+    delay(1);
     
   }
 }
