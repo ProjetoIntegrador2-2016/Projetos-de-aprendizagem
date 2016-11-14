@@ -8,12 +8,11 @@ import pid_controller as pid
 
 pid_controller = pid.PIDController(10, 0, 0)
 
-TARGET_INITIAL_DISTANCE = 1000
+TARGET_INITIAL_DISTANCE = 100
 target_distance = TARGET_INITIAL_DISTANCE
 actual_time = 0
 dt = 5
 steps = 101
-sample = target_distance
 # Create vectors with the same quantity of steps, filled with zeros.
 # np.zeros(): https://docs.scipy.org/doc/numpy/reference/generated/numpy.zeros.html
 cart_position = np.zeros(steps)
@@ -45,8 +44,8 @@ for i in range(steps) :
 
         #Update cart distance to the target and cart's position
         #Suponha que o carrinho andou 10cm
-        target_distance -= 10
-        cart_position[i] = cart_position[i-1] + 10
+        target_distance -= 1
+        cart_position[i] = cart_position[i-1] + 1
 
         #The objective is to make the set_point equal to the process_value
         #So the ratio must equal 1.
